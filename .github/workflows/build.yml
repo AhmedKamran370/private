@@ -1,0 +1,27 @@
+name: Build APK
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Arrange files
+        run: |
+          mkdir -p app/src/main/java/com/bundlebot app/src/main/res/xml app/src/main/res/values app/src/main/res/drawable app/src/main/res/mipmap-anydpi-v26
+          mv root-build.gradle.kts build.gradle.kts
+          mv app-build.gradle.kts app/build.gradle.kts
+          mv AndroidManifest.xml app/src/main/
+          mv A11y.kt Alarm.kt MainActivity.kt Parser.kt Store.kt WaListener.kt app/src/main/java/com/bundlebot/
+          mv a11y.xml app/src/main/res/xml/
+          mv colors.xml strings.xml app/src/main/res/values/
+          mv ic_fg.xml app/src/main/res/drawable/
+          mv ic_launcher.xml app/src/main/res/mipmap-anydpi-v26/
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: 8.9 }
+      - run: gradle assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BundleBot-apk
+          path: app/build/outputs/apk/debug/*.apk
